@@ -1,0 +1,71 @@
+import tkinter
+import os
+import random
+
+IMG_PATH = 'nums'
+FIELD_SIZE = 4
+main_window = tkinter.Tk()
+main_window.title('Python custom game')
+image_file_name = os.listdir(IMG_PATH)
+images = []
+for image_name in image_file_name:
+    rel_image_name = os.path.join(IMG_PATH, image_name)
+    image_obj = tkinter.PhotoImage(file=rel_image_name)
+    images.append(image_obj)
+image=iter(images)
+labels = []
+for row in range(FIELD_SIZE):
+    buf =[]
+    for column in range(FIELD_SIZE):
+        x = row * FIELD_SIZE + column
+        tmp_label = tkinter.Label(main_window, image=next(image))
+        tmp_label.grid(row=row, column=column)
+        buf.append(tmp_label)
+        tmp_label.x=x
+        tmp_label.row=row
+        tmp_label.column=column
+    labels.append(buf)
+print(labels)
+print('____________________________________________________________________________')
+
+curr=labels[-1][-1]
+def items_exchange(arg):
+    curr.row, arg.row = arg.row, curr.row
+    curr.column, arg.column = arg.column, curr.column
+    labels[curr.row][curr.column], labels[arg.row][arg.column] = \
+        labels[arg.row][arg.column], labels[curr.row][curr.column]
+
+
+def item_render(arg):
+    arg.grid(row=arg.row, column=arg.column)
+
+
+def key_press(arg):
+    near = None
+    if arg == 'Up' and curr.row > 0:
+        near=labels[curr.row - 1][curr.column]
+    elif arg == 'Down' and curr.row < FIELD_SIZE - 1:
+        near=labels[curr.row + 1][curr.column]
+    elif arg == 'Left' and curr.column > 0:
+        near=labels[curr.row][curr.column - 1]
+    elif arg == 'Right' and curr.column < FIELD_SIZE - 1:
+        near=labels[curr.row][curr.column + 1]
+
+    if near:
+        items_exchange(near)
+        item_render(near)
+        item_render(curr)
+
+main_window.bind('<KeyPress>',lambda x: key_press(x.keysym))
+def shuffle_game():
+    actions = ['Up', 'Down', 'Left', 'Right']
+    for _ in range(100):
+        random_actions = random.sample(actions, 1)[0]
+        key_press(random_actions)
+
+
+for el_row in range(FIELD_SIZE):
+    for el_column in range(FIELD_SIZE):
+        print(labels[el_row][el_column])
+main_window.after(1500, shuffle_game)
+main_window.mainloop()
